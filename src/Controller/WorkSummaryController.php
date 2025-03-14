@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class WorkSummaryController extends AbstractController
@@ -21,10 +22,10 @@ final class WorkSummaryController extends AbstractController
     ) {}
 
     #[Route('/work-summary/{id}', name: 'work_summary', methods: ['GET', 'HEAD'])]
-    public function getWorkSummary(?Employee $employee, Request $request): JsonResponse
+    public function getWorkSummary(?Employee $employee, Request $request): Response
     {
         if (!$employee) {
-            return new JsonResponse(['error' => 'Employee not found'], JsonResponse::HTTP_NOT_FOUND);
+            return $this->json(['error' => 'Employee not found'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         $requestDate = $request->query->get('date') ?? (new DateTime())->format('Y-m-d');
@@ -40,7 +41,7 @@ final class WorkSummaryController extends AbstractController
                 ->modify('last day of this month')
                 ->setTime(23, 59, 59);
         } else {
-            return new JsonResponse(['error' => 'Invalid date format'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(['error' => 'Invalid date format'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $dailyWorkTimes = $this->dailyWorkTimeRepository->findByEmployeeAndDateRange($employee, $dateFrom, $dateTo);

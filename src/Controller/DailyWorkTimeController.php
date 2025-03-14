@@ -13,39 +13,31 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class DailyWorkTimeController extends AbstractController
 {
-    public function __construct(private EntityManagerInterface $entityManager)
-    {
-    }
+    use FormErrorExtractorTrait;
+
+    public function __construct(private EntityManagerInterface $entityManager) {}
 
     #[Route('/daily-work-time', name: 'daily_work_time_create', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
+    public function create(Request $request): Response
     {
         $dayWorkTime = new DailyWorkTime();
         $form = $this->createForm(DailyWorkTimeType::class, $dayWorkTime);
         $form->submit($request->request->all(), false);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->entityManager->persist($dayWorkTime);
-            $this->entityManager->flush();
+        if (!$form->isSubmitted() || !$form->isValid()) {
+            $errors = $this->extractFormErrors($form);
 
-            return new JsonResponse(
-                [
-                    'response' => ['Daily work time created!'],
-                ], 
-                Response::HTTP_CREATED
-            );
+            return $this->json(['errors' => $errors], Response::HTTP_BAD_REQUEST);
         }
 
-        $errors = [];
-        foreach ($form->all() as $fieldName => $formField) {
-            foreach ($formField->getErrors() as $error) {
-                $errors[$fieldName][] = $error->getMessage();
-            }
-        }
-        foreach ($form->getErrors() as $error) {
-            $errors['global'][] = $error->getMessage();
-        }
+        $this->entityManager->persist($dayWorkTime);
+        $this->entityManager->flush();
 
-        return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+        return $this->json(
+            [
+                'response' => ['Daily work time created!'],
+            ],
+            Response::HTTP_CREATED
+        );
     }
 }
