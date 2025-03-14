@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\DailyWorkTime;
+use App\Entity\Employee;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +16,22 @@ class DailyWorkTimeRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, DailyWorkTime::class);
+    }
+
+    public function findByEmployeeAndDateRange(
+        Employee $employee,
+        DateTimeInterface $dateFrom,
+        DateTimeInterface $dateTo
+    ): array {
+        return $this->createQueryBuilder('d')
+            ->andWhere('d.employee = :employee')
+            ->andWhere('d.date >= :dateFrom')
+            ->andWhere('d.date <= :dateTo')
+            ->setParameter('employee', $employee)
+            ->setParameter('dateFrom', $dateFrom)
+            ->setParameter('dateTo', $dateTo)
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**
