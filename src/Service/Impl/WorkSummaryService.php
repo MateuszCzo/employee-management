@@ -5,10 +5,12 @@ namespace App\Service\Impl;
 use App\Constants\Constants;
 use App\Dto\WorkSummary;
 use App\Service\WorkSummaryServiceInterface;
-use DateInterval;
+use App\Service\WorkTimeRounderTrait;
 
 class WorkSummaryService implements WorkSummaryServiceInterface
 {
+    use WorkTimeRounderTrait;
+
     /**
      * @inheritDoc
      */
@@ -34,16 +36,5 @@ class WorkSummaryService implements WorkSummaryServiceInterface
             $standardPay,
             $overtimePay
         );
-    }
-
-    protected function roundHours(DateInterval $date): float
-    {
-        if ($date->i < 15) {
-            return $date->h;
-        } elseif ($date->i < 45) {
-            return $date->h + 0.5;
-        } else {
-            return $date->h + 1;
-        }
     }
 }
